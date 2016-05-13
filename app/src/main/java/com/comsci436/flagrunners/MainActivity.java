@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
     private static final String TAG_TCF = "TCF";
+    private static final String FIREBASE_URL ="https://radiant-fire-7313.firebaseio.com";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private final static int SUBACTION_BTN_SIZE = 150;
     private final static double DEPLOYMENT_RADIUS = 402.336; //Quarter Mile, in meters
@@ -140,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        mFirebase = new Firebase("https://torrid-torch-4377.firebaseio.com/");
+        mFirebase = new Firebase(FIREBASE_URL);
         currentUserId = mFirebase.getAuth().getUid();
 
         final Firebase userRef = mFirebase.child("users");

@@ -18,7 +18,7 @@ import com.firebase.client.FirebaseError;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String FIREBASE_URL = "https://torrid-torch-4377.firebaseio.com";
+    private static final String FIREBASE_URL = "https://radiant-fire-7313.firebaseio.com";
     private Firebase mFirebase;
 
     private EditText emailInput;
