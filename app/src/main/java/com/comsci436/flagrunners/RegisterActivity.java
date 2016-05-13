@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
@@ -64,20 +65,32 @@ public class RegisterActivity extends AppCompatActivity {
 
     public void attemptFirebaseRegister() {
         String name = this.usernameInput.getText().toString();
-        String email = this.emailInput.getText().toString();
+        final String email = this.emailInput.getText().toString();
         final String password = this.passwordInput.getText().toString();
 
         if (!name.isEmpty()) {
             mFirebase.createUser(email, password, new Firebase.ResultHandler() {
                 @Override
                 public void onSuccess() {
-                    String currId = mFirebase.getAuth().getUid();
-                    Firebase currUser = mFirebase.child("users").child(currId);
+                    mFirebase.authWithPassword(email, password, new Firebase.AuthResultHandler() {
+                        @Override
+                        public void onAuthenticated(AuthData authData) {
+                            String currId = authData.getUid();
+                            Firebase currUser = mFirebase.child("users").child(currId);
 
-                    Player p = new Player(usernameInput.getText().toString(), currId);
+                            Player p = new Player(usernameInput.getText().toString(), currId);
 
-                    currUser.setValue(p);
-                    finish();
+                            currUser.setValue(p);
+                            finish();
+                        }
+
+                        @Override
+                        public void onAuthenticationError(FirebaseError firebaseError) {
+                            usernameInput.setText("");
+                            emailInput.setText("");
+                            passwordInput.setText("");
+                        }
+                    });
                 }
 
                 @Override
