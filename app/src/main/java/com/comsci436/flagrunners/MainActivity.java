@@ -65,6 +65,9 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Firebase mFirebase;
+
+    private String currentUserId;
+
     public static boolean TCF_ENABLED = false;
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
@@ -79,6 +82,8 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -135,7 +140,10 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        mFirebase = new Firebase("https://radiant-fire-7313.firebaseio.com/");
+        mFirebase = new Firebase("https://torrid-torch-4377.firebaseio.com/");
+        currentUserId = mFirebase.getAuth().getUid();
+
+        final Firebase userRef = mFirebase.child("users");
     }
 
     @Override

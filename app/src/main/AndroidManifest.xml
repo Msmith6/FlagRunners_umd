@@ -2,32 +2,49 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.comsci436.flagrunners">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_flag_launcher"
         android:label="@string/app_name"
-        android:name=".MyApplication"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCQRWr7kKRwC3Z9gjQQDeeYyLE3oCZMaFs" />
+
+        <activity
+            android:name=".LoginActivity"
+            android:label="Log In">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCQRWr7kKRwC3Z9gjQQDeeYyLE3oCZMaFs"/>
-    </application>
 
+        </activity>
+
+        <activity
+            android:name=".RegisterActivity"
+            android:label="Register New User"
+            android:parentActivityName="com.comsci436.flagrunners.LoginActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.comsci436.flagrunners.LoginActivity" />
+        </activity>
+
+    </application>
 </manifest>
