@@ -25,7 +25,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.AuthData;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.MutableData;
+import com.firebase.client.Transaction;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements
     private LocationRequest mLocationRequest;
     private Firebase mFirebase;
 
-    private String currentUserId;
+    private AuthData currAuth;
 
     public static boolean TCF_ENABLED = false;
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -137,9 +144,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         mFirebase = new Firebase(FIREBASE_URL);
-        currentUserId = mFirebase.getAuth().getUid();
-
-        final Firebase userRef = mFirebase.child("users");
+        currAuth = mFirebase.getAuth();
     }
 
     @Override
@@ -160,13 +165,13 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         android.app.Fragment settingFragment = getFragmentManager().findFragmentByTag("setting_frag");
+        android.app.Fragment statsFragment = getFragmentManager().findFragmentByTag("stats_frag");
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
-        }
-        else if (settingFragment != null && settingFragment.isVisible()){
+        } else if (settingFragment != null && settingFragment.isVisible()){
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.show();
 
@@ -174,8 +179,13 @@ public class MainActivity extends AppCompatActivity implements
             fragmentManager.beginTransaction().remove(settingFragment).commit();
            // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
 
-        }
-        else {
+        } else if (statsFragment != null && statsFragment.isVisible()) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.show();
+
+            android.app.FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().remove(statsFragment).commit();
+        } else {
             super.onBackPressed();
         }
     }
@@ -208,25 +218,39 @@ public class MainActivity extends AppCompatActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_flist) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-
+        } else if (id == R.id.nav_stats) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.hide();
 
             android.app.FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment(), "setting_frag").commit();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.map, new StatsFragment(), "stats_frag")
+                    .commit();
+        } else if (id == R.id.nav_leader) {
+            // Create a listener for the username
+/*            Firebase curr = mFirebase.child("users").child((mFirebase.getAuth().getUid())).child("username");
 
-        } else if (id == R.id.nav_share) {
+              curr.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    System.out.println(dataSnapshot.getValue().toString());
+                }
 
-        } else if (id == R.id.nav_send) {
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+                    // Do nothing on cancel
+                }
+            });*/
+        } else if (id == R.id.nav_manage) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.hide();
 
+            android.app.FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.map, new SettingFragment(), "setting_frag")
+                    .commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -289,7 +313,9 @@ public class MainActivity extends AppCompatActivity implements
                 .center(latLng)
                 .radius(DEPLOYMENT_RADIUS)
                 .strokeColor(Color.GREEN)
-                .fillColor(Color.BLUE));
+                .fillColor(Color.BLUE)
+                .visible(false));
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -326,6 +352,28 @@ public class MainActivity extends AppCompatActivity implements
                 .position(new LatLng(newLat, newLng))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_flag_neutral)));
 
+        Firebase currUser = mFirebase.child("users").child(currAuth.getUid()).child("flagsDeployed");
+        currUser.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                if (mutableData.getValue() == null) {
+                    mutableData.setValue(1);
+                } else {
+                    mutableData.setValue((Long) mutableData.getValue() + 1);
+                }
+
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
+                if (firebaseError != null) {
+                    System.out.println("Firebase counter increment failed.");
+                } else {
+                    System.out.println("Firebase counter increment succeeded.");
+                }
+            }
+        });
     }
 
     @Override
