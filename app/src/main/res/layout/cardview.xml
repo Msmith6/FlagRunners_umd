@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/friend_cv"
+    android:layout_margin="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/friend_name"
+            android:layout_alignParentTop="true"
+            android:textSize="30sp"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/friend_cap"
+            android:layout_below="@+id/friend_name"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Captured:  " />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/friend_dep"
+            android:layout_below="@+id/friend_name"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:layout_toRightOf="@+id/friend_cap"
+            android:layout_marginLeft="40dp"
+            android:text="Deployed:  " />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/friend_num"
+            android:layout_below="@+id/friend_name"
+            android:textSize="15sp"
+            android:textColor="#000"
+            android:layout_toRightOf="@+id/friend_dep"
+            android:layout_marginLeft="40dp"
+            android:text="Friends:  " />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

@@ -1,7 +1,6 @@
 package com.comsci436.flagrunners;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -78,7 +77,7 @@ public class RegisterActivity extends AppCompatActivity {
                             String currId = authData.getUid();
                             Firebase currUser = mFirebase.child("users").child(currId);
 
-                            Player p = new Player(usernameInput.getText().toString(), currId);
+                            Player p = new Player(usernameInput.getText().toString(), email, currId);
 
                             currUser.setValue(p);
                             finish();

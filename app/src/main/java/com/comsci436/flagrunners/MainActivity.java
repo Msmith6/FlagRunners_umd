@@ -1,6 +1,7 @@
 package com.comsci436.flagrunners;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -219,7 +220,9 @@ public class MainActivity extends AppCompatActivity implements
         int id = item.getItemId();
 
         if (id == R.id.nav_flist) {
-            // Handle the camera action
+            // Start the new activity with friends
+            startActivity(new Intent(MainActivity.this, Friends.class));
+
         } else if (id == R.id.nav_stats) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.hide();
@@ -229,20 +232,7 @@ public class MainActivity extends AppCompatActivity implements
                     .replace(R.id.map, new StatsFragment(), "stats_frag")
                     .commit();
         } else if (id == R.id.nav_leader) {
-            // Create a listener for the username
-/*            Firebase curr = mFirebase.child("users").child((mFirebase.getAuth().getUid())).child("username");
-
-              curr.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    System.out.println(dataSnapshot.getValue().toString());
-                }
-
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
-                    // Do nothing on cancel
-                }
-            });*/
+            // Show leaderboard
         } else if (id == R.id.nav_manage) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.hide();
