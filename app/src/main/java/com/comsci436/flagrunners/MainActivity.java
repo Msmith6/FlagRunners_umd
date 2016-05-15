@@ -630,6 +630,9 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     //Go to TCF Lobby
                     //TCF_ENABLED is switched to true once a game starts
+                    Intent intent = new Intent(this, TCF.class);
+                    startActivity(intent);
+
                 }
 
         }
