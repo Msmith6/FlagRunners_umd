@@ -1,6 +1,7 @@
 package com.comsci436.flagrunners;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -151,18 +152,8 @@ public class MainActivity extends AppCompatActivity implements
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        android.app.Fragment settingFragment = getFragmentManager().findFragmentByTag("setting_frag");
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-
-        }
-        else if (settingFragment != null && settingFragment.isVisible()){
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.show();
-
-            android.app.FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().remove(settingFragment).commit();
-           // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
 
         }
         else {
@@ -203,15 +194,12 @@ public class MainActivity extends AppCompatActivity implements
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
-
+            Intent i = new Intent(this, LeaderboardActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_manage) {
+            Intent i = new Intent(this, SettingActivity.class);
+            startActivity(i);
 
-
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.hide();
-
-            android.app.FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment(), "setting_frag").commit();
 
         } else if (id == R.id.nav_share) {
 

@@ -21,6 +21,7 @@ public class SettingFragment extends Fragment implements CompoundButton.OnChecke
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.setting, container, false);
 
+
         Switch sw = (Switch) myView.findViewById(R.id.switch1);
         sw.setOnCheckedChangeListener(this);
 
