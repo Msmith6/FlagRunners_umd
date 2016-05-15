@@ -9,13 +9,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.comsci436.flagrunners.TCF">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Join Group"
-        android:id="@+id/button2"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -23,8 +16,8 @@
         android:text="Create Group"
         android:id="@+id/button1"
         android:onClick="createGroup"
-        android:layout_below="@+id/listView"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/listView" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -42,7 +35,8 @@
         android:text="Host"
         android:id="@+id/host"
         android:layout_above="@+id/listView"
-        android:layout_alignStart="@+id/button1" />
+        android:layout_toEndOf="@+id/groupName"
+        android:layout_marginStart="28dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -50,8 +44,8 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Open"
         android:id="@+id/openSpots"
-        android:layout_alignParentTop="true"
-        android:layout_alignEnd="@+id/button1" />
+        android:layout_alignTop="@+id/password"
+        android:layout_toStartOf="@+id/button1" />
 
     <Button
         android:layout_width="wrap_content"
@@ -69,7 +63,7 @@
         android:layout_below="@+id/groupName"
         android:layout_alignParentStart="true"
         android:layout_marginTop="21dp"
-        android:layout_above="@+id/button2" />
+        android:layout_above="@+id/button1" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -77,7 +71,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Password"
         android:id="@+id/password"
-        android:layout_alignTop="@+id/openSpots"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
