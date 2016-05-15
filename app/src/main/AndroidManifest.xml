@@ -31,7 +31,7 @@
             android:value="AIzaSyCQRWr7kKRwC3Z9gjQQDeeYyLE3oCZMaFs" />
 
         <activity android:name=".LeaderboardActivity" />
-        <activity android:name=".SettingActivity"></activity>
+        <activity android:name=".SettingActivity" />
     </application>
 
 </manifest>
