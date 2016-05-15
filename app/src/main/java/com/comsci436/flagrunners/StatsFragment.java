@@ -57,11 +57,14 @@ public class StatsFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Player p = dataSnapshot.getValue(Player.class);
+                String mString = Double.toString(p.getDistanceTraveled());
+                int i = mString.indexOf('.');
+                mString = mString.substring(0, i + 3);//Displays miles to 2 decimal places
 
                 username.setText(p.getUsername());
                 flagsCaptured.setText(Long.toString(p.getFlagsCaptured()));
                 flagsDeployed.setText(Long.toString(p.getFlagsDeployed()));
-                distanceTraveled.setText(Double.toString(p.getDistanceTraveled()) + " mi.");
+                distanceTraveled.setText(mString + " mi.");
 
                 // Get the data for who has the player has captured the most flags from
                 String player = "";

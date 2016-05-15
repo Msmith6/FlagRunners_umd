@@ -10,6 +10,7 @@ import java.util.List;
 public class Player {
     private String username;
     private String email;
+    private String tcfGameId;
     private int flagsCaptured;
     private int flagsDeployed;
 
@@ -60,4 +61,8 @@ public class Player {
     public HashMap<String, Integer> getCapturedByMap() { return capturedByMap; }
 
     public HashMap<String, Integer> getCapturedFromMap() { return capturedFromMap; }
+
+    public String getTcfGameId() { return tcfGameId; }
+
+    public void setTcfGameId(String tcfGameId) { this.tcfGameId = tcfGameId; }
 }
