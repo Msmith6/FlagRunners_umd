@@ -60,8 +60,10 @@ public class TCF extends AppCompatActivity {
                         map.put("groupName", group.getGroup_name());
                         map.put("host", group.getCurrent_username());
                         map.put("open", String.valueOf(group.getOpen_spot()));
-                        if (group.getPassword() != null) {
+                        if (group.getPassword() != "") {
                             map.put("password", "Yes");
+                        }else{
+                            map.put("password", "No");
                         }
                         userList.put(i, group.getUserList());
                         feedList.add(map);

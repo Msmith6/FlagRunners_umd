@@ -33,13 +33,13 @@ public class JoinGroup extends AppCompatActivity {
         mFirebase = new Firebase("https://radiant-fire-7313.firebaseio.com/");
         listView = (ListView) findViewById(R.id.listViewTwo);
 
-        HashSet<String> passed = (HashSet<String>)getIntent().getSerializableExtra("passedValue");
+      /*  HashSet<String> passed = (HashSet<String>)getIntent().getSerializableExtra("passedValue");
 
         for(String temp : passed){
             map.put("name", temp);
         }
         feedList.add(map);
-
+*/
         SimpleAdapter simpleAdapter = new SimpleAdapter(this, feedList, R.layout.view_group,
                 new String[]{"name"},
                 new int[]{R.id.textViewName}) {};
