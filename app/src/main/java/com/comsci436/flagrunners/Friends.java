@@ -5,6 +5,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -55,6 +56,7 @@ public class Friends extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText emailInput = new EditText(this);
         emailInput.setHint("Player Email");
+        emailInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
 
         builder.setView(emailInput)
                 .setMessage("Enter the player's email:")

@@ -1,14 +1,9 @@
 package com.comsci436.flagrunners;
 
 import android.Manifest;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,15 +19,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -45,8 +37,6 @@ import com.firebase.client.ValueEventListener;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -55,7 +45,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -64,6 +53,7 @@ import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -77,19 +67,19 @@ public class MainActivity extends AppCompatActivity implements
         View.OnClickListener {
 
     private static boolean initialStart = true;
-    private GeofenceTriggeredReceiver receiver;
+    private boolean locationEnabled = false, buttonWasVisible;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private AuthData currAuth;
     private Firebase mFirebase;
     private Firebase mFirebaseFlags;
-    private Location lastLocation;
-    private PendingIntent mGeofencePendingIntent;
+    private Location lastLocation, flagLocation;
+
     private Map<String, Marker> mMarkers = new HashMap<>();
     private Map<String, Flag> mFlags = new HashMap<>();
-    private Map<Marker, Geofence> markerToGeofence = new HashMap<>();
     private Button mButton;
+    private long userLastTime;
     private double distanceTraveled;
     public static boolean TCF_ENABLED = false;
 
@@ -98,31 +88,18 @@ public class MainActivity extends AppCompatActivity implements
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
     private static final String TAG_TCF = "TCF";
-    private static final String FIREBASE_URL ="https://radiant-fire-7313.firebaseio.com";
+    private static final String FIREBASE_URL = "https://radiant-fire-7313.firebaseio.com";
 
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private final static int SUBACTION_BTN_SIZE = 150; //Modifies TCF and Deploy button size
-    private final static int GEOFENCE_RADIUS_METERS = 100;
+    private final static int MY_PERMISSIONS_REQUEST_FINE_LOCATION = 9001;
+    private final static int SUBACTION_BTN_SIZE = 250; //Modifies TCF and Deploy button size
+    private final static int CAPTURE_RADIUS_METERS = 128;
     private final static double MAX_DEPLOYMENT_RADIUS = 402.336; //Quarter mile, in meters
     private final static double MIN_DEPLOYMENT_RADIUS = 150.0;
     private final static double DEGREES_LAT_TO_METERS = 111045.0;
     private final static double DEGREES_LONGITUDE_TO_METERS_AT_POLES = 111321.543;
 
 
-
-    public class GeofenceTriggeredReceiver extends BroadcastReceiver {
-        public static final String ACTION_RESP = "com.comsci436.intent.action.MESSAGE_PROCESSED";
-
-        // This onReceive method will make the capture button visible to the user and sets the
-        // geofenceId field so that when the player presses the capture button, the correct
-        // geofence will be removed
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            flagKey =
-                    intent.getStringExtra(GeofenceTransitionsIntentService.GEOFENCE_TRIGGERED_TAG);
-            mButton.setVisibility(View.VISIBLE);
-        }
-    }
 
     public static class Flag {
         private double latitude;
@@ -220,6 +197,19 @@ public class MainActivity extends AppCompatActivity implements
                 if (actionMenu.isOpen()) {
                     actionMenu.close(true);
                 }
+                if (mButton.getVisibility() == View.VISIBLE) {
+                    mButton.setVisibility(View.INVISIBLE);
+                    buttonWasVisible = true;
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                if (buttonWasVisible) {
+                    mButton.setVisibility(View.VISIBLE);
+                    buttonWasVisible = false;
+                }
             }
         };
         drawer.addDrawerListener(toggle);
@@ -251,14 +241,10 @@ public class MainActivity extends AppCompatActivity implements
         mFirebase = new Firebase(FIREBASE_URL);
         mFirebaseFlags = mFirebase.child("testFlags");
         currAuth = mFirebase.getAuth();
-        IntentFilter filter = new IntentFilter(GeofenceTriggeredReceiver.ACTION_RESP);
-        filter.addCategory(Intent.CATEGORY_DEFAULT);
-        receiver = new GeofenceTriggeredReceiver();
-        registerReceiver(receiver, filter);
         mGoogleApiClient.connect();
     }
 
-   @Override
+    @Override
     protected void onResume() {
         super.onResume();
         initialStart = true;
@@ -268,7 +254,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        unregisterReceiver(receiver);
         if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
@@ -285,13 +270,13 @@ public class MainActivity extends AppCompatActivity implements
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
-        } else if (settingFragment != null && settingFragment.isVisible()){
+        } else if (settingFragment != null && settingFragment.isVisible()) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.show();
 
             android.app.FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().remove(settingFragment).commit();
-           // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
+            // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
 
         } else if (statsFragment != null && statsFragment.isVisible()) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -302,13 +287,6 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
     }
 
     @Override
@@ -326,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -375,7 +353,14 @@ public class MainActivity extends AppCompatActivity implements
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
+            locationEnabled = true;
+        } else {
+            //Request permission
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_FINE_LOCATION);
         }
+
         mFirebaseFlags.addChildEventListener(new ChildEventListener() {
             private GoogleMap cMap = mMap; //Obtaining our map ref
 
@@ -391,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements
                     mMarkers.put(dataSnapshot.getKey(), mMarker);
                     mFlags.put(dataSnapshot.getKey(), mFlag);
 
-                } else  {
+                } else {
                     Log.i(TAG, "MUST BE A TCF FLAG");
                 }
             }
@@ -409,10 +394,6 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (markerToRemove != null) {
                     markerToRemove.remove();
-
-                    if (markerToGeofence.get(markerToRemove) != null) {
-                        removeGeofence(markerToRemove);
-                    }
                 }
             }
 
@@ -477,62 +458,57 @@ public class MainActivity extends AppCompatActivity implements
             initialStart = false;
         }
 
-        // This block focuses on dynamically adding geofences to markers within a quarter
-        // mile of the user and removing geofences of markers further than a quarter mile away
+        if (flagLocation != null && location.distanceTo(flagLocation) > CAPTURE_RADIUS_METERS) {
+            mButton.setVisibility(View.INVISIBLE);
+            flagKey = null;
+        }
 
-        Log.i(TAG, "Beginning dynamic geofencing");
-        Collection<Marker> mCollection = mMarkers.values();
-        Object[] mArr = mCollection.toArray();
-        for (Object obj : mArr) {
-            Marker marker = (Marker) obj;
+        for (Map.Entry es : mMarkers.entrySet()) {
+            Marker marker = (Marker) es.getValue();
             Location targetLocation = new Location("");
             LatLng mLatLng = marker.getPosition();
             targetLocation.setLatitude(mLatLng.latitude);
             targetLocation.setLongitude(mLatLng.longitude);
-            Geofence mGeofence = markerToGeofence.get(marker);
 
-            if (location.distanceTo(targetLocation) <= MAX_DEPLOYMENT_RADIUS) {
-                //Build a geofence if one did not yet exist at the location
-                if (mGeofence == null) {
-                    addGeofence(marker);
-                }
-
-            } else {
-                //Remove a geofence if one did exist at the location
-                if (mGeofence != null) {
-                    removeGeofence(marker);
-                }
+            if (location.distanceTo(targetLocation) <= CAPTURE_RADIUS_METERS) {
+                flagKey = (String) es.getKey();
+                mButton.setVisibility(View.VISIBLE);
+                break;
             }
-        }
+         }
 
         if (lastLocation == null) {
             lastLocation = location;
         } else {
-            Log.i(TAG, "Calculating new distance");
-            distanceTraveled = location.distanceTo(lastLocation) / 1609.34; // Converting to miles
 
-            Firebase currUser = mFirebase.child("users").child(currAuth.getUid()).child("distanceTraveled");
-            currUser.runTransaction(new Transaction.Handler() {
-                @Override
-                public Transaction.Result doTransaction(MutableData mutableData) {
-                    if (mutableData.getValue() == null) {
-                        mutableData.setValue(0.0);
-                    } else {
-                        mutableData.setValue((Double) mutableData.getValue() + distanceTraveled);
+            distanceTraveled = location.distanceTo(lastLocation); // Converting to miles
+
+            if (distanceTraveled < 10) {
+                Log.i(TAG, "Calculating new distance");
+                distanceTraveled /= 1609.34;
+                Firebase currUser = mFirebase.child("users").child(currAuth.getUid()).child("distanceTraveled");
+                currUser.runTransaction(new Transaction.Handler() {
+                    @Override
+                    public Transaction.Result doTransaction(MutableData mutableData) {
+                        if (mutableData.getValue() == null) {
+                            mutableData.setValue(0.0);
+                        } else {
+                            mutableData.setValue((Double) mutableData.getValue() + distanceTraveled);
+                        }
+
+                        return Transaction.success(mutableData);
                     }
 
-                    return Transaction.success(mutableData);
-                }
-
-                @Override
-                public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
-                    if (firebaseError != null) {
-                        System.out.println("Firebase counter increment failed: " + firebaseError.getMessage());
-                    } else {
-                        System.out.println("Firebase counter increment succeeded.");
+                    @Override
+                    public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
+                        if (firebaseError != null) {
+                            System.out.println("Firebase counter increment failed: " + firebaseError.getMessage());
+                        } else {
+                            System.out.println("Firebase counter increment succeeded.");
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
     }
@@ -551,7 +527,7 @@ public class MainActivity extends AppCompatActivity implements
         //Shrunk the max radius of longitude and made it that much closer to the user's location
         //This is still acceptable behavior as the geofence of any flag will have radius 100 meters.
         //Just wanted to avoid have the user deploy and capture the same flag in quick succession.
-        double minMultiplier = MIN_DEPLOYMENT_RADIUS/MAX_DEPLOYMENT_RADIUS;
+        double minMultiplier = MIN_DEPLOYMENT_RADIUS / MAX_DEPLOYMENT_RADIUS;
 
         //Multipliers
         double d1 = random.nextDouble();
@@ -562,13 +538,13 @@ public class MainActivity extends AppCompatActivity implements
         double lngMultiplier = Math.cos(mLat) * DEGREES_LONGITUDE_TO_METERS_AT_POLES;
 
         lngMultiplier = MAX_DEPLOYMENT_RADIUS / lngMultiplier;
-        lngMultiplier *= (d2/2.0);
+        lngMultiplier *= (d2 / 2.0);
         latMultiplier *= d2;
 
         double newLat = mLat + latMultiplier * Math.sin(rand_angle);
         double newLng = mLng + lngMultiplier * Math.cos(rand_angle);
         String newChild = newLat + ":" + newLng;
-        newChild = newChild.replace(".","");
+        newChild = newChild.replace(".", "");
 
         String id = currAuth.getUid();
         Flag newFlag = new Flag(newLat, newLng, Flag.TYPE_NEUTRAL, null, id);
@@ -577,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements
         //user's map
         mFirebaseFlags.child(newChild).setValue(newFlag);
         Toast toast = Toast.makeText(this, "Flag Deployed", Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 0, 170);
+        toast.setGravity(Gravity.TOP, 0, 200);
         toast.show();
 
         Firebase currUser = mFirebase.child("users").child(currAuth.getUid()).child("flagsDeployed");
@@ -608,17 +584,74 @@ public class MainActivity extends AppCompatActivity implements
     public void onClick(View v) {
         switch ((String) v.getTag()) {
             case TAG_DEPLOY:
-                //TODO: Set a 1 hour cooldown for deploying a flag
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                    deployFlag(location);
+                Date currDate = new Date();
+                long currTime = currDate.getTime(); // in milliseconds
+
+                Firebase curr = mFirebase.child("users")
+                        .child(mFirebase.getAuth().getUid())
+                        .child("timeLastFlagDeployed");
+
+                curr.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        userLastTime = dataSnapshot.getValue(Long.class);
+
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+
+                    }
+                });
+
+                long timeDiff = currTime - userLastTime;
+                double timeDiff2 = timeDiff / 1000.0;
+                timeDiff2 /= 60.0;
+
+                if (timeDiff2 < 60) {
+                    long timeDiff3 = (long) Math.round(timeDiff2);
+                    timeDiff3 = 60 - timeDiff3;
+                    Toast toast = Toast.makeText
+                            (this, "Unable to deploy flag for " + timeDiff3 + " minutes", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 200);
+                    toast.show();
+                } else {
+
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    } else {
+                        //Request permission
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                MY_PERMISSIONS_REQUEST_FINE_LOCATION);
+                    }
+                    deployFlag(lastLocation);
+
+                    curr.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+
+                            Date d = new Date();
+                            mutableData.setValue(d.getTime());
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
+                            if (firebaseError != null) {
+                                System.out.println("Firebase counter increment failed.");
+                            } else {
+                                System.out.println("Firebase counter increment succeeded.");
+                            }
+                        }
+                    });
                 }
                 break;
             case TAG_TCF:
                 //TODO: implement TCF button press
                 Toast toast = Toast.makeText(this, "TCF Button Clicked", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 170);
+                toast.setGravity(Gravity.TOP, 0, 200);
                 toast.show();
                 if (TCF_ENABLED) {
                     //Go to Game Overview Activitys
@@ -630,68 +663,9 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @NonNull
-    private GeofencingRequest getGeofencingRequest(Geofence geofence) {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_DWELL);
-        builder.addGeofence(geofence);
-        return builder.build();
-    }
-
-    private PendingIntent getGeofencePendingIntent() {
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
-        }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-    }
-
-    private void removeGeofence(Marker marker) {
-        LatLng mLatLng = marker.getPosition();
-        String requestId = mLatLng.latitude + ":" + mLatLng.longitude;
-        ArrayList<String> mList = new ArrayList<String>();
-
-        mList.add(requestId);
-        LocationServices.GeofencingApi.removeGeofences(
-                mGoogleApiClient,
-                mList
-        );
-
-        markerToGeofence.put(marker, null);
-        Log.i(TAG, "Removed old geofence");
-    }
-
-    private void addGeofence(Marker marker) {
-        LatLng mLatLng = marker.getPosition();
-        String requestId = mLatLng.latitude + ":" + mLatLng.longitude;
-        requestId = requestId.replace(".","");
-        Geofence newGeofence = new Geofence.Builder()
-                .setRequestId(requestId)
-                .setCircularRegion(
-                        mLatLng.latitude,
-                        mLatLng.longitude,
-                        GEOFENCE_RADIUS_METERS
-                )
-                .setExpirationDuration(Geofence.NEVER_EXPIRE)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_DWELL)
-                .setLoiteringDelay(5000) //5 seconds
-                .build();
-        markerToGeofence.put(marker, newGeofence);
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
-                    getGeofencingRequest(newGeofence),
-                    getGeofencePendingIntent()
-            );
-        }
-        Log.i(TAG, "Added new geofence");
-    }
-
     private void captureFlag(View v) {
         Toast toast = Toast.makeText(this, "Flag captured!", Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 0, 170);
+        toast.setGravity(Gravity.TOP, 0, 200);
         toast.show();
 
         Firebase mChild = mFirebaseFlags.child(flagKey); //Entry for Flag
@@ -732,22 +706,17 @@ public class MainActivity extends AppCompatActivity implements
         if (!flagDeployer.equals(currAuth.getUid())) { //Only update if it's not our own flag
 
             //Updating Capturer's stats
-            Firebase currUserCaptures = mFirebase.child("users").child(currAuth.getUid()).child("capturedFromMap");
+            Firebase currUserCaptures = mFirebase.child("users").child(currAuth.getUid()).child("capturedFromMap").child(flagDeployer);
             currUserCaptures.runTransaction(new Transaction.Handler() {
                 @Override
                 public Transaction.Result doTransaction(MutableData mutableData) {
-                    HashMap<String, Integer> capturedFromMap =
-                            (HashMap<String, Integer>) mutableData.getValue();
+                    Long caps = (Long) mutableData.getValue();
 
-                    Integer captures = capturedFromMap.get(flagDeployer);
-                    if (captures == null) {
-                        capturedFromMap.put(flagDeployer, 1);
+                    if (caps == null) {
+                        mutableData.setValue(1);
                     } else {
-                        capturedFromMap.put(flagDeployer, captures + 1);
+                        mutableData.setValue(caps + 1);
                     }
-                    mutableData.setValue(capturedFromMap);
-
-
                     return Transaction.success(mutableData);
                 }
 
@@ -762,21 +731,21 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             //Updating Deployer's stats
-            Firebase deployerCaptured = mFirebase.child("users").child(flagDeployer).child("capturedByMap");
+            Firebase deployerCaptured = mFirebase.child("users")
+                    .child(flagDeployer)
+                    .child("capturedByMap")
+                    .child(currAuth.getUid());
             deployerCaptured.runTransaction(new Transaction.Handler() {
                 @Override
                 public Transaction.Result doTransaction(MutableData mutableData) {
-                    HashMap<String, Integer> capturedByMap =
-                            (HashMap<String, Integer>) mutableData.getValue();
 
-                    Integer captures = capturedByMap.get(currAuth.getUid());
+
+                    Long captures = (Long) mutableData.getValue();
                     if (captures == null) {
-                        capturedByMap.put(currAuth.getUid(), 1);
+                        mutableData.setValue(1);
                     } else {
-                        capturedByMap.put(currAuth.getUid(), captures + 1);
+                        mutableData.setValue(captures + 1);
                     }
-                    mutableData.setValue(capturedByMap);
-
 
                     return Transaction.success(mutableData);
                 }
@@ -791,6 +760,25 @@ public class MainActivity extends AppCompatActivity implements
                 }
             });
         }
+
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_FINE_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    if (!locationEnabled) { mMap.setMyLocationEnabled(true); }
+                }
+            } else {
+                mMap.setMyLocationEnabled(false); // Turn off location tracking
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+    }
 }
