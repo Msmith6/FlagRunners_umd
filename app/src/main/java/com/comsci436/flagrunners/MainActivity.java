@@ -570,11 +570,6 @@ public class MainActivity extends AppCompatActivity implements
         String newChild = newLat + ":" + newLng;
         newChild = newChild.replace(".","");
 
-        /*
-        Map<String, Double> flags = new HashMap<String,Double>();
-        flags.put("latitude", newLat);
-        flags.put("longitude", newLng);
-        */
         String id = currAuth.getUid();
         Flag newFlag = new Flag(newLat, newLng, Flag.TYPE_NEUTRAL, null, id);
 
@@ -703,7 +698,6 @@ public class MainActivity extends AppCompatActivity implements
         Flag mFlag = mFlags.get(flagKey);
         mChild.setValue(null); // Delete marker entry; Geofence and Marker will be removed in onChildRemoved()
 
-        // TODO: Update flag capture count, capturedFrom map, and the flag's original user's capturedBy map
 
         // Hide "Capture" button
         v.setVisibility(View.INVISIBLE);

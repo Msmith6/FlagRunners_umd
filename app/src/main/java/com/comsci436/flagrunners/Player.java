@@ -13,6 +13,7 @@ public class Player {
     private String tcfGameId;
     private int flagsCaptured;
     private int flagsDeployed;
+    private long timeLastFlagDeployed;
 
     private double distanceTraveled;
 
@@ -65,4 +66,10 @@ public class Player {
     public String getTcfGameId() { return tcfGameId; }
 
     public void setTcfGameId(String tcfGameId) { this.tcfGameId = tcfGameId; }
+
+    public long getTimeLastFlagDeployed() { return timeLastFlagDeployed; }
+
+    public void setTimeLastFlagDeployed(long timeLastFlagDeployed) {
+        this.timeLastFlagDeployed = timeLastFlagDeployed;
+    }
 }
