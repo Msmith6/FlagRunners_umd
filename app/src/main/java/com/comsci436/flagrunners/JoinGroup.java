@@ -1,9 +1,11 @@
 package com.comsci436.flagrunners;
 
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -64,43 +66,88 @@ public class JoinGroup extends AppCompatActivity {
     }
     public void joinGroup(View view){
         if (passed.getPassword().equals("")) {
-            mFirebase.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot snapshot) {
-                    DataSnapshot n = snapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
-                    username = n.getValue().toString();
+            join();
+        }else{
+            //If the room has password
+            showDialog();
+        }
+    }
 
-                    for (DataSnapshot postSnapshot : snapshot.child("Groups").getChildren()) {
-                        for (DataSnapshot post : postSnapshot.getChildren()) {
-                            Group group = post.getValue(Group.class);
-                            String curr = group.getCurrent_username();
+    public void join(){
+        mFirebase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                DataSnapshot n = snapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
+                username = n.getValue().toString();
 
-                            if (curr.equals(passed.getCurrent_username())) {
-                                HashSet<String> userList = passed.getUserList();
-                                userList.add(username);
+                for (DataSnapshot postSnapshot : snapshot.child("Groups").getChildren()) {
+                    for (DataSnapshot post : postSnapshot.getChildren()) {
+                        Group group = post.getValue(Group.class);
+                        String curr = group.getCurrent_username();
 
-                                int open = passed.getOpen_spot() - 1;
+                        if (curr.equals(passed.getCurrent_username())) {
+                            HashSet<String> userList = passed.getUserList();
+                            userList.add(username);
 
-                                post.getRef().child("userList").setValue(userList);
-                                post.getRef().child("open_spot").setValue(open);
-                            }
+                            int open = passed.getOpen_spot() - 1;
 
+                            post.getRef().child("userList").setValue(userList);
+                            post.getRef().child("open_spot").setValue(open);
                         }
                     }
                 }
+            }
 
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
-                }
-            });
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+            }
+        });
 
-            Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
+        Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(JoinGroup.this, TCF.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        }else{
-            //If the room has password
-        }
+        Intent intent = new Intent(JoinGroup.this, TCF.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+    public void showDialog(){
+        LayoutInflater inflater = LayoutInflater.from(JoinGroup.this);
+        View promptsView = inflater.inflate(R.layout.dialog_signin, null);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(JoinGroup.this);
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText userInput = (EditText) promptsView.findViewById(R.id.groupPassword);
+
+        alertDialogBuilder
+                .setTitle("Enter password")
+                .setMessage("Password required for this Room")
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String input = userInput.getText().toString();
+
+                        if (input.equals(passed.getPassword()))
+                        {
+                            join();
+                        }else{
+                            String message = "The password you have entered is incorrect." + " \n \n" + "Please try again!";
+                            AlertDialog.Builder builder = new AlertDialog.Builder(JoinGroup.this);
+                            builder.setTitle("Error");
+                            builder.setMessage(message);
+                            builder.setNegativeButton("Cancel", null);
+                            builder.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    showDialog();
+                                }
+                            });
+                            builder.create().show();
+                        }
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        }).show();
     }
 }
+
+
