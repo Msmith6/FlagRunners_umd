@@ -13,35 +13,34 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:text="Enable Sound Effects    " />
-    <Button
+
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tutorial"
-        android:shadowColor="@color/accent_material_light"
-        android:layout_marginBottom="140dp"
-        android:id="@+id/button_dist"
-        android:layout_above="@+id/button3"
-        android:layout_centerHorizontal="true"
-        android:textSize="25dp" />
+        android:inputType="textPersonName"
+        android:hint="@string/change_username"
+        android:id="@+id/editText_setting"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/textView3"
+        android:layout_alignStart="@+id/switch1" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Link Facebook"
-        android:id="@+id/button2"
-        android:layout_alignTop="@+id/button_dist"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
-        android:textSize="25dp" />
+        android:text="change"
+        android:id="@+id/button_setting"
+        android:layout_alignTop="@+id/editText_setting"
+        android:layout_alignEnd="@+id/switch1" />
 
-    <Button
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Logout"
-        android:id="@+id/button3"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
+        android:text="Change Username"
+        android:id="@+id/textView3"
+        android:layout_below="@+id/switch1"
+        android:layout_marginTop="100dp"
+        android:layout_alignStart="@+id/editText_setting"
+        android:textColor="#000000"
         android:textSize="25dp" />
 
 
