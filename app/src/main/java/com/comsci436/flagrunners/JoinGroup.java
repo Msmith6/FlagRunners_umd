@@ -1,11 +1,21 @@
 package com.comsci436.flagrunners;
 
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
@@ -53,66 +63,44 @@ public class JoinGroup extends AppCompatActivity {
         finish();
     }
     public void joinGroup(View view){
+        if (passed.getPassword().equals("")) {
+            mFirebase.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    DataSnapshot n = snapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
+                    username = n.getValue().toString();
 
-        mFirebase.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                DataSnapshot n = snapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
-                username = n.getValue().toString();
+                    for (DataSnapshot postSnapshot : snapshot.child("Groups").getChildren()) {
+                        for (DataSnapshot post : postSnapshot.getChildren()) {
+                            Group group = post.getValue(Group.class);
+                            String curr = group.getCurrent_username();
 
-                for(DataSnapshot postSnapshot : snapshot.child("Groups").getChildren()){
-                    for(DataSnapshot post : postSnapshot.getChildren()) {
-                        Group group = post.getValue(Group.class);
-                        String curr = group.getCurrent_username();
+                            if (curr.equals(passed.getCurrent_username())) {
+                                HashSet<String> userList = passed.getUserList();
+                                userList.add(username);
 
-                        if(curr.equals(passed.getCurrent_username())) {
-                            HashSet<String> userList = passed.getUserList();
-                            userList.add(username);
+                                int open = passed.getOpen_spot() - 1;
 
-                            int open = passed.getOpen_spot() - 1;
+                                post.getRef().child("userList").setValue(userList);
+                                post.getRef().child("open_spot").setValue(open);
+                            }
 
-                            post.getRef().child("userList").setValue(userList);
-                            post.getRef().child("open_spot").setValue(open);
                         }
-
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {            }
-        });
-
-        /*
-        task.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot n = dataSnapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
-                username = n.getValue().toString();
-
-                HashSet<String> userList = passed.getUserList();
-                userList.add(username);
-
-                int open = passed.getOpen_spot() - 1;
-
-
-                for(DataSnapshot snapshot: dataSnapshot.getChildren()){
-                    snapshot.getRef().child("userList").setValue(userList);
-                    snapshot.getRef().child("open_spot").setValue(open);
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
                 }
-            }
+            });
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+            Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
 
-            }
-        });
-
-*/
-        Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
-
-        Intent intent = new Intent(JoinGroup.this, TCF.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+            Intent intent = new Intent(JoinGroup.this, TCF.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }else{
+            //If the room has password
+        }
     }
 }
