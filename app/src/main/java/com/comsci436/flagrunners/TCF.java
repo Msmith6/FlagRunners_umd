@@ -36,6 +36,7 @@ public class TCF extends AppCompatActivity {
     HashMap<String,String> map = new HashMap<String, String>();
     ArrayList<HashMap<String, String>> feedList = new ArrayList<HashMap<String, String>>();
     HashMap<Integer, HashSet<String>> userList = new HashMap<Integer, HashSet<String>>();
+    ArrayList<Group> copy = new ArrayList<Group>();
     int selected_position  = -1;
 
 
@@ -56,18 +57,31 @@ public class TCF extends AppCompatActivity {
                     for(DataSnapshot post : postSnapshot.getChildren()) {
                         Group group = post.getValue(Group.class);
 
-                        map = new HashMap<String, String>();
-                        map.put("groupName", group.getGroup_name());
-                        map.put("host", group.getCurrent_username());
-                        map.put("open", String.valueOf(group.getOpen_spot()));
-                        if (group.getPassword() != "") {
-                            map.put("password", "Yes");
-                        }else{
-                            map.put("password", "No");
+                        if(group.getOpen_spot() > 0) {
+                            map = new HashMap<String, String>();
+                            map.put("groupName", group.getGroup_name());
+                            map.put("host", group.getCurrent_username());
+                            map.put("open", String.valueOf(group.getOpen_spot()));
+                            if (group.getPassword() != "") {
+                                map.put("password", "Yes");
+                            } else {
+                                map.put("password", "No");
+                            }
+                            userList.put(i, group.getUserList());
+                            feedList.add(map);
+                            i++;
+
+                            // making copy
+                            Group groupCopy = new Group();
+                            groupCopy.setCurrent_username(group.getCurrent_username());
+                            groupCopy.setGroup_name(group.getGroup_name());
+                            groupCopy.setOpen_spot(group.getOpen_spot());
+                            groupCopy.setPassword(group.getPassword());
+                            groupCopy.setTeam_size(group.getTeam_size());
+                            groupCopy.setUserList(group.getUserList());
+
+                            copy.add(groupCopy);
                         }
-                        userList.put(i, group.getUserList());
-                        feedList.add(map);
-                        i++;
                     }
                 }
             }
@@ -89,10 +103,8 @@ public class TCF extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selected_position = position;
                 if(selected_position >= 0){
-
                     Intent joinGroup = new Intent(TCF.this, JoinGroup.class);
-                    HashSet<String> pass = userList.get(selected_position);
-                    joinGroup.putExtra("passedValue", pass);
+                    joinGroup.putExtra("passed", copy.get(selected_position));
                     startActivity(joinGroup);
                 }
             }

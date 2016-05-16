@@ -1,11 +1,12 @@
 package com.comsci436.flagrunners;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
 /**
  * Created by Yoolbin on 2016-05-13.
  */
-public class Group {
+public class Group implements Serializable{
     private int team_size, open_spot;
     private String group_name, password, current_username;
     private HashSet<String> userList;

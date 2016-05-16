@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 
 import java.lang.reflect.Array;
@@ -19,10 +20,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class JoinGroup extends AppCompatActivity {
-    Firebase mFirebase;
     ListView listView;
-    HashMap<String, String> map = new HashMap<String, String>();
     ArrayList<HashMap<String, String>> feedList = new ArrayList<HashMap<String, String>>();
+    Firebase mFirebase = new Firebase("https://radiant-fire-7313.firebaseio.com/");
+    String username = "";
+    Group passed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,22 +32,21 @@ public class JoinGroup extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join_group);
 
-        mFirebase = new Firebase("https://radiant-fire-7313.firebaseio.com/");
         listView = (ListView) findViewById(R.id.listViewTwo);
 
-       HashSet<String> passed = (HashSet<String>)getIntent().getSerializableExtra("passedValue");
+        passed = (Group)getIntent().getSerializableExtra("passed");
 
-        for(String temp : passed){
+        for(String temp : passed.getUserList()){
+            HashMap<String, String> map = new HashMap<String, String>();
             map.put("name", temp);
+            feedList.add(map);
         }
-        feedList.add(map);
+
 
         SimpleAdapter simpleAdapter = new SimpleAdapter(this, feedList, R.layout.view_group,
                 new String[]{"name"},
                 new int[]{R.id.textViewName}) {};
         listView.setAdapter(simpleAdapter);
-
-        listView.setTextFilterEnabled(true);
     }
 
     public void cancel(View view){
@@ -53,5 +54,65 @@ public class JoinGroup extends AppCompatActivity {
     }
     public void joinGroup(View view){
 
+        mFirebase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                DataSnapshot n = snapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
+                username = n.getValue().toString();
+
+                for(DataSnapshot postSnapshot : snapshot.child("Groups").getChildren()){
+                    for(DataSnapshot post : postSnapshot.getChildren()) {
+                        Group group = post.getValue(Group.class);
+                        String curr = group.getCurrent_username();
+
+                        if(curr.equals(passed.getCurrent_username())) {
+                            HashSet<String> userList = passed.getUserList();
+                            userList.add(username);
+
+                            int open = passed.getOpen_spot() - 1;
+
+                            post.getRef().child("userList").setValue(userList);
+                            post.getRef().child("open_spot").setValue(open);
+                        }
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {            }
+        });
+
+        /*
+        task.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DataSnapshot n = dataSnapshot.child("users").child(mFirebase.getAuth().getUid()).child("username");
+                username = n.getValue().toString();
+
+                HashSet<String> userList = passed.getUserList();
+                userList.add(username);
+
+                int open = passed.getOpen_spot() - 1;
+
+
+                for(DataSnapshot snapshot: dataSnapshot.getChildren()){
+                    snapshot.getRef().child("userList").setValue(userList);
+                    snapshot.getRef().child("open_spot").setValue(open);
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
+*/
+        Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(JoinGroup.this, TCF.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }
