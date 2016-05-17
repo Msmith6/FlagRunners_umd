@@ -103,10 +103,11 @@ public class JoinGroup extends AppCompatActivity {
             }
         });
 
-        Toast.makeText(JoinGroup.this, "You Join a Group", Toast.LENGTH_SHORT).show();
+        Toast.makeText(JoinGroup.this, "Joined group", Toast.LENGTH_SHORT).show();
 
-        Intent intent = new Intent(JoinGroup.this, TCF.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("tcf_enabled", "yes");
         startActivity(intent);
     }
 

@@ -74,10 +74,10 @@ public class CreateGroup extends AppCompatActivity {
             teamSize = Integer.parseInt(size.getText().toString());
         }
         if (teamSize > 5) {
-            size.setError("Team Size should be lower than 6!");
+            size.setError("Team Size cannot be greater than 5!");
             isErrorOne = -1;
         } else if (teamSize < 1) {
-            size.setError("Team Size should be grater than 0");
+            size.setError("Team Size should be greater than 0");
             isErrorOne = -1;
         } else{
             isErrorOne = 0;
@@ -111,8 +111,9 @@ public class CreateGroup extends AppCompatActivity {
 
             Toast.makeText(CreateGroup.this, "New Group Has Been Created", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(CreateGroup.this, TCF.class);
+            Intent intent = new Intent(CreateGroup.this, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra("tcf_enabled", "yes");
             startActivity(intent);
         }
     }

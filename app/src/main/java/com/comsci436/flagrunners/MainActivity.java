@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements
     private Button mButton;
     private long userLastTime;
     private double distanceTraveled;
-    public static boolean TCF_ENABLED = false;
+    private static boolean tcf_enabled = false;
 
     private String flagKey;
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -163,6 +163,10 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
+        Intent i = getIntent();
+        if (i.getStringExtra("tcf_enabled") != null && i.getStringExtra("tcf_enabled").equals("yes")) {
+            tcf_enabled = true;
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
@@ -414,7 +418,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "Location services connected.");
-
         int status = ContextCompat
                 .checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
@@ -446,9 +449,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-
-
-
         if (location.getAccuracy() >= 30.0) { // Discard low accuracy locations
             Log.i(TAG, "Low accuracy location");
             return;
@@ -656,22 +656,14 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case TAG_TCF:
-                //TODO: implement TCF button press
-                Intent i = new Intent(this, TCF.class);
-                startActivity(i);
-               /* Toast toast = Toast.makeText(this, "TCF Button Clicked", Toast.LENGTH_LONG);
-                toast.setGravity(Gravity.TOP, 0, 200);
-                toast.show();*
-                if (TCF_ENABLED) {
-                    //Go to Game Overview Activitys
+                if (!tcf_enabled) {
+                    Intent i = new Intent(this, TCF.class);
+                    startActivity(i);
                 } else {
-                    //Go to TCF Lobby
-                    //TCF_ENABLED is switched to true once a game starts
-                    Intent intent = new Intent(this, TCF.class);
-                    startActivity(intent);
+                    Toast toast = Toast.makeText(this, "TCF Overview", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 200);
+                    toast.show();
                 }
-                */
-
         }
     }
 
@@ -682,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements
 
         Firebase mChild = mFirebaseFlags.child(flagKey); //Entry for Flag
         Flag mFlag = mFlags.get(flagKey);
-        mChild.setValue(null); // Delete marker entry; Geofence and Marker will be removed in onChildRemoved()
+        mChild.setValue(null); // Delete marker entry; Marker will be removed in onChildRemoved()
 
 
         // Hide "Capture" button
