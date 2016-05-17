@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#B0E0E6">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Flags Captured"
+        android:id="@+id/flags_cap"
+        android:layout_marginStart="53dp"
+        android:layout_marginTop="118dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/flags_cap_num"
+        android:layout_marginStart="56dp"
+        android:layout_alignTop="@+id/flags_cap"
+        android:layout_toEndOf="@+id/dist_trav" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Flags Deployed"
+        android:id="@+id/flags_dep"
+        android:layout_alignTop="@+id/flags_dep_num"
+        android:layout_alignStart="@+id/flags_cap" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/flags_dep_num"
+        android:layout_marginTop="35dp"
+        android:layout_below="@+id/flags_cap_num"
+        android:layout_alignStart="@+id/flags_cap_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Distance Traveled"
+        android:id="@+id/dist_trav"
+        android:layout_alignTop="@+id/dist_trav_num"
+        android:layout_alignStart="@+id/flags_dep" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/dist_trav_num"
+        android:layout_marginTop="35dp"
+        android:layout_below="@+id/flags_dep_num"
+        android:layout_alignStart="@+id/flags_dep_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Captured Most Flags From"
+        android:id="@+id/cap_most"
+        android:layout_alignTop="@+id/cap_most_num"
+        android:layout_alignStart="@+id/dist_trav"
+        android:layout_toStartOf="@+id/flags_cap_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/cap_most_num"
+        android:layout_marginTop="27dp"
+        android:layout_below="@+id/dist_trav_num"
+        android:layout_alignStart="@+id/dist_trav_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Most Flags Captured By"
+        android:id="@+id/cap_by"
+        android:layout_alignTop="@+id/cap_by_num"
+        android:layout_alignStart="@+id/cap_most"
+        android:layout_toStartOf="@+id/flags_cap_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/cap_by_num"
+        android:layout_marginTop="23dp"
+        android:layout_below="@+id/cap_most"
+        android:layout_alignStart="@+id/cap_most_num" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/stat_username"
+        android:layout_above="@+id/flags_cap_num"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="38dp"
+        android:textSize="30sp"
+        android:textColor="#000"
+        android:maxWidth="350dp"
+        android:maxLines="2" />
+</RelativeLayout>

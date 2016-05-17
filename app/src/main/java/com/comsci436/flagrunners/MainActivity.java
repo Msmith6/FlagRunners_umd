@@ -26,7 +26,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.MutableData;
+import com.firebase.client.Transaction;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,10 +65,15 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Firebase mFirebase;
+
+    private AuthData currAuth;
+
     public static boolean TCF_ENABLED = false;
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
     private static final String TAG_TCF = "TCF";
+    private static final String FIREBASE_URL ="https://radiant-fire-7313.firebaseio.com";
+
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private final static int SUBACTION_BTN_SIZE = 150;
     private final static double DEPLOYMENT_RADIUS = 402.336; //Quarter Mile, in meters
@@ -74,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -130,7 +142,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        mFirebase = new Firebase("https://radiant-fire-7313.firebaseio.com/");
+        mFirebase = new Firebase(FIREBASE_URL);
+        currAuth = mFirebase.getAuth();
     }
 
     @Override
@@ -151,12 +164,21 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        android.app.Fragment settingFragment = getFragmentManager().findFragmentByTag("setting_frag");
+        android.app.Fragment statsFragment = getFragmentManager().findFragmentByTag("stats_frag");
+
 
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
+        } else if (statsFragment != null && statsFragment.isVisible()) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.show();
+
+            android.app.FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction().remove(statsFragment).commit();
         }
-        else {
+        else{
             super.onBackPressed();
         }
     }
@@ -189,24 +211,27 @@ public class MainActivity extends AppCompatActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_flist) {
+            // Start the new activity with friends
+            startActivity(new Intent(MainActivity.this, Friends.class));
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_stats) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.hide();
+
+            android.app.FragmentManager fragmentManager = getFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.map, new StatsFragment(), "stats_frag")
+                    .commit();
+        } else if (id == R.id.nav_leader) {
             Intent i = new Intent(this, LeaderboardActivity.class);
             startActivity(i);
+
         } else if (id == R.id.nav_manage) {
             Intent i = new Intent(this, SettingActivity.class);
             startActivity(i);
 
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -267,7 +292,9 @@ public class MainActivity extends AppCompatActivity implements
                 .center(latLng)
                 .radius(DEPLOYMENT_RADIUS)
                 .strokeColor(Color.GREEN)
-                .fillColor(Color.BLUE));
+                .fillColor(Color.BLUE)
+                .visible(false));
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
@@ -304,6 +331,28 @@ public class MainActivity extends AppCompatActivity implements
                 .position(new LatLng(newLat, newLng))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_flag_neutral)));
 
+        Firebase currUser = mFirebase.child("users").child(currAuth.getUid()).child("flagsDeployed");
+        currUser.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                if (mutableData.getValue() == null) {
+                    mutableData.setValue(1);
+                } else {
+                    mutableData.setValue((Long) mutableData.getValue() + 1);
+                }
+
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
+                if (firebaseError != null) {
+                    System.out.println("Firebase counter increment failed.");
+                } else {
+                    System.out.println("Firebase counter increment succeeded.");
+                }
+            }
+        });
     }
 
     @Override
