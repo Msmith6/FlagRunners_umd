@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -164,8 +165,8 @@ public class MainActivity extends AppCompatActivity implements
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //fab.setBackgroundDrawable(R.drawable.button_action_blue);
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
+
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(SUBACTION_BTN_SIZE, SUBACTION_BTN_SIZE);
         itemBuilder.setLayoutParams(params);
@@ -180,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements
         button2.setOnClickListener(this);
         button2.setTag(TAG_TCF);
 
-        FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+        final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button1)
                 .addSubActionView(button2)
                 .attachTo(fab)

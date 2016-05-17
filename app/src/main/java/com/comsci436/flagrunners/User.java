@@ -6,7 +6,6 @@ public class User {
     private double distance;
 
     public User(String name, long flagsCaptured, double distance) {
-        //super();
         this.name = name;
         this.flagsCaptured = flagsCaptured;
         this.distance = distance;

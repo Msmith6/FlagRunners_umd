@@ -37,9 +37,14 @@ public class LeaderboardActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for (DataSnapshot user : dataSnapshot.getChildren()) {
+                                    String mString = String.valueOf((double) user.child("distanceTraveled").getValue());
+                                    int i = mString.indexOf('.');
+                                    mString = mString.substring(0, i + 3);//Displays miles to 2 decimal places
+                                    double distanceTraveled = Double.valueOf(mString);
+
                                     userListDist.add(new User((String) user.child("username").getValue(),
                                             (long) user.child("flagsCaptured").getValue(),
-                                            (double) user.child("distanceTraveled").getValue()));
+                                            distanceTraveled));
 
                                 }
                                 Collections.sort(userListDist, new DistanceComparator());
@@ -67,7 +72,7 @@ public class LeaderboardActivity extends AppCompatActivity {
             });
         }
 
-        Firebase ref = new Firebase("https://radiant-fire-7313.firebaseio.com/").child("users");
+        Firebase ref = new Firebase("https://radiant-fire-7313.firebaseio.com").child("users");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {

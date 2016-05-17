@@ -33,7 +33,7 @@ public class Player {
         flagsCaptured = 0;
         flagsDeployed = 0;
 
-        distanceTraveled = 0.0;
+        distanceTraveled = 0.001; //0.0 is stored as a Long in Firebase, will cause errors
 
         friendsList = new ArrayList<String>();
         capturedByMap = new HashMap<String, Integer>();
