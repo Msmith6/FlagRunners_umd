@@ -56,7 +56,7 @@ public class SettingActivity extends AppCompatActivity implements  CompoundButto
             public void onClick(View v) {
                 Firebase ref = new Firebase("https://radiant-fire-7313.firebaseio.com/").child("users");
                 currAuth = ref.getAuth();
-                Firebase currUsername = ref.child("users").child(currAuth.getUid()).child("username");
+                Firebase currUsername = ref.child(currAuth.getUid()).child("username");
                 currUsername.setValue(newUsername.getText().toString());
                 Toast msg = Toast.makeText(getBaseContext(),
                         "Username changed to " + newUsername.getText().toString(), Toast.LENGTH_LONG);
