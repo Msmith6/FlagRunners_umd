@@ -9,7 +9,7 @@
         android:divider="@color/accent_material_dark"
         android:dividerHeight="4px"
         android:layout_width="match_parent"
-        android:layout_height="461dp"
+        android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:background="#B0E0E6"
         android:nestedScrollingEnabled="false"
