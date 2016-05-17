@@ -446,12 +446,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(TAG, "New Location");
-        Log.d(TAG, location.toString());
+
+
 
         if (location.getAccuracy() >= 30.0) { // Discard low accuracy locations
+            Log.i(TAG, "Low accuracy location");
             return;
         }
+        Log.i(TAG, "New location");
+        Log.d(TAG, location.toString());
+
         if (initialStart) {
             double currentLatitude = location.getLatitude();
             double currentLongitude = location.getLongitude();
@@ -653,9 +657,11 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case TAG_TCF:
                 //TODO: implement TCF button press
-                Toast toast = Toast.makeText(this, "TCF Button Clicked", Toast.LENGTH_LONG);
+                Intent i = new Intent(this, TCF.class);
+                startActivity(i);
+               /* Toast toast = Toast.makeText(this, "TCF Button Clicked", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP, 0, 200);
-                toast.show();
+                toast.show();*
                 if (TCF_ENABLED) {
                     //Go to Game Overview Activitys
                 } else {
@@ -664,6 +670,7 @@ public class MainActivity extends AppCompatActivity implements
                     Intent intent = new Intent(this, TCF.class);
                     startActivity(intent);
                 }
+                */
 
         }
     }
