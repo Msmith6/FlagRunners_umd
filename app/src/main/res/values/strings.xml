@@ -19,4 +19,6 @@
     <string name="statistics">Statistics</string>
     <string name="leaderboards">Leaderboards</string>
 
+    <string name="password">Password</string>
+    <string name="cancel">Cancel</string>
 </resources>
