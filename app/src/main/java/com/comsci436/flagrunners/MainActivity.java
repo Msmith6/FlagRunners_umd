@@ -18,7 +18,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+
     private AuthData currAuth;
     private Firebase mFirebase;
     private Firebase mFirebaseFlags;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
     private static final String TAG_TCF = "TCF";
-    private static final String FIREBASE_URL = "https://radiant-fire-7313.firebaseio.com";
+    private static final String FIREBASE_URL ="https://radiant-fire-7313.firebaseio.com";
 
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     private final static int MY_PERMISSIONS_REQUEST_FINE_LOCATION = 9001;
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements
         button2.setOnClickListener(this);
         button2.setTag(TAG_TCF);
 
-        final FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
+        FloatingActionMenu actionMenu = new FloatingActionMenu.Builder(this)
                 .addSubActionView(button1)
                 .addSubActionView(button2)
                 .attachTo(fab)
@@ -262,20 +263,19 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         android.app.Fragment settingFragment = getFragmentManager().findFragmentByTag("setting_frag");
         android.app.Fragment statsFragment = getFragmentManager().findFragmentByTag("stats_frag");
 
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
-        } else if (settingFragment != null && settingFragment.isVisible()) {
+        } else if (settingFragment != null && settingFragment.isVisible()){
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
             fab.show();
 
             android.app.FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction().remove(settingFragment).commit();
-            // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
+           // fragmentManager.beginTransaction().replace(R.id.map, new SettingFragment()).addToBackStack("setting_frag").commit();\
 
         } else if (statsFragment != null && statsFragment.isVisible()) {
             FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -322,17 +322,14 @@ public class MainActivity extends AppCompatActivity implements
                     .replace(R.id.map, new StatsFragment(), "stats_frag")
                     .commit();
         } else if (id == R.id.nav_leader) {
-            // Show leaderboard
+            Intent i = new Intent(this, LeaderboardActivity.class);
+            startActivity(i);
+
         } else if (id == R.id.nav_manage) {
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            fab.hide();
+            Intent i = new Intent(this, SettingActivity.class);
+            startActivity(i);
 
-            android.app.FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.map, new SettingFragment(), "setting_frag")
-                    .commit();
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

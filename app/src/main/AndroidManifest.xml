@@ -39,6 +39,25 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.comsci436.flagrunners.LoginActivity" />
         </activity>
+        <activity
+            android:name=".SettingActivity"
+            android:label="Setting"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.comsci436.flagrunners.MainActivity" />
+
+        </activity>
+
+        <activity
+            android:name=".LeaderboardActivity"
+            android:label="Leaderboard"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.comsci436.flagrunners.MainActivity" />
+
+        </activity>
 
         <activity
             android:name=".Friends"
