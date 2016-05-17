@@ -8,11 +8,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class FriendsFragment extends Fragment {
 
     private static final String FIREBASE_URL = "https://radiant-fire-7313.firebaseio.com";
     private RecyclerView mRecyclerView;
+    private TextView mEmptyView;
     private RecyclerView.Adapter mAdapter;
     private LinearLayoutManager mLinearLayoutManager;
 
@@ -42,6 +46,7 @@ public class FriendsFragment extends Fragment {
         mFirebase = new Firebase(FIREBASE_URL);
 
         mRecyclerView = (RecyclerView) myView.findViewById(R.id.friend_rv);
+        mEmptyView = (TextView) myView.findViewById(R.id.empty_view);
         mRecyclerView.setHasFixedSize(true);
 
         mLinearLayoutManager = new LinearLayoutManager(super.getActivity());
@@ -55,8 +60,13 @@ public class FriendsFragment extends Fragment {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 players = (List<String>) dataSnapshot.getValue();
                 players.remove(0);
-                mAdapter = new RVPlayerAdapter(players);
-                mRecyclerView.setAdapter(mAdapter);
+                if (!players.isEmpty()) {
+                    mEmptyView.setVisibility(View.GONE);
+                    mAdapter = new RVPlayerAdapter(players);
+                    mRecyclerView.setAdapter(mAdapter);
+                } else {
+                    mEmptyView.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override

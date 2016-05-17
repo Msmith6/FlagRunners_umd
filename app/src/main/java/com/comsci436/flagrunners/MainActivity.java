@@ -660,7 +660,7 @@ public class MainActivity extends AppCompatActivity implements
                     Intent i = new Intent(this, TCF.class);
                     startActivity(i);
                 } else {
-                    Toast toast = Toast.makeText(this, "TCF Overview", Toast.LENGTH_LONG);
+                    Toast toast = Toast.makeText(this, "You are currently queued for a Team game", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.TOP, 0, 200);
                     toast.show();
                 }
