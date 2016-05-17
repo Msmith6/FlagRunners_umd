@@ -29,8 +29,7 @@ tools:context="com.comsci436.flagrunners.LoginActivity">
             android:hint="@string/prompt_email"
             android:inputType="textEmailAddress"
             android:maxLines="1"
-            android:singleLine="true"
-            android:text="tom@fire.io" />
+            android:singleLine="true" />
 
         <EditText
             android:id="@+id/editText_password"
@@ -43,8 +42,7 @@ tools:context="com.comsci436.flagrunners.LoginActivity">
             android:imeOptions="actionUnspecified"
             android:inputType="textPassword"
             android:maxLines="1"
-            android:singleLine="true"
-            android:text="nonce" />
+            android:singleLine="true" />
 
         <Button
             android:id="@+id/button_sign_in"

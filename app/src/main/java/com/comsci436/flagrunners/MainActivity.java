@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements
     public static boolean TCF_ENABLED = false;
 
     private String flagKey;
-    private String flagDeployer;
     public static final String TAG = MainActivity.class.getSimpleName();
     private static final String TAG_DEPLOY = "Deploy";
     private static final String TAG_TCF = "TCF";
@@ -395,6 +394,11 @@ public class MainActivity extends AppCompatActivity implements
                 if (markerToRemove != null) {
                     markerToRemove.remove();
                 }
+                if (flagKey != null && mKey.equals(flagKey)) {
+                    mButton.setVisibility(View.INVISIBLE);
+                    flagKey = null;
+                    flagLocation = null;
+                }
             }
 
             @Override
@@ -472,6 +476,7 @@ public class MainActivity extends AppCompatActivity implements
 
             if (location.distanceTo(targetLocation) <= CAPTURE_RADIUS_METERS) {
                 flagKey = (String) es.getKey();
+                flagLocation = targetLocation;
                 mButton.setVisibility(View.VISIBLE);
                 break;
             }
@@ -701,25 +706,28 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         //Adding to user's capturedFromMap
-        flagDeployer = mFlag.getDeployer(); //The flag deployer's key
+        String flagDeployer = mFlag.getDeployer(); //The flag deployer's key
 
         if (!flagDeployer.equals(currAuth.getUid())) { //Only update if it's not our own flag
 
             //Updating Capturer's stats
-            Firebase currUserCaptures = mFirebase.child("users").child(currAuth.getUid()).child("capturedFromMap").child(flagDeployer);
+            Firebase currUserCaptures = mFirebase.child("users")
+                        .child(currAuth.getUid())
+                        .child("capturedFromMap")
+                        .child(flagDeployer);
+
             currUserCaptures.runTransaction(new Transaction.Handler() {
                 @Override
                 public Transaction.Result doTransaction(MutableData mutableData) {
-                    Long caps = (Long) mutableData.getValue();
+                    Long captures = (Long) mutableData.getValue();
 
-                    if (caps == null) {
+                    if (captures == null) {
                         mutableData.setValue(1);
                     } else {
-                        mutableData.setValue(caps + 1);
+                        mutableData.setValue(captures + 1);
                     }
                     return Transaction.success(mutableData);
                 }
-
                 @Override
                 public void onComplete(FirebaseError firebaseError, boolean b, DataSnapshot dataSnapshot) {
                     if (firebaseError != null) {
@@ -738,9 +746,8 @@ public class MainActivity extends AppCompatActivity implements
             deployerCaptured.runTransaction(new Transaction.Handler() {
                 @Override
                 public Transaction.Result doTransaction(MutableData mutableData) {
-
-
                     Long captures = (Long) mutableData.getValue();
+
                     if (captures == null) {
                         mutableData.setValue(1);
                     } else {
